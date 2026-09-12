@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Биология тесті</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #eef7ee;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #3d7a4b;
+        }
+
+        #progress {
+            text-align: center;
+            color: #777;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        #question {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .answer {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #d5e5d5;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            text-align: left;
+            font-size: 16px;
+        }
+
+        .answer:hover {
+            background: #f0f8f0;
+        }
+
+        .answer.selected {
+            background: #d9f0dc;
+            border-color: #5b9b68;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 25px;
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            background: #5b9b68;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #477d52;
+        }
+
+        button:disabled {
+            background: #aaa;
+            cursor: not-allowed;
+        }
+
+        #result {
+            display: none;
+        }
+
+        .wrong {
+            background: #fff0f0;
+            border-left: 5px solid #d9534f;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 10px;
+        }
+
+        .correct-answer {
+            color: green;
+            font-weight: bold;
+        }
+
+        .your-answer {
+            color: #d9534f;
+        }
+
+        .restart {
+            display: block;
+            margin: 25px auto 0;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div id="test">
+
+        <h1>🧬 Биология тесті</h1>
+
+        <div id="progress"></div>
+
+        <div id="question"></div>
+
+        <div id="answers"></div>
+
+        <div class="buttons">
+
+            <button id="backButton" onclick="previousQuestion()">
+                ← Артқа
+            </button>
+
+            <button id="nextButton" onclick="nextQuestion()">
+                Келесі →
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div id="result">
+
+        <h1>🎉 Нәтиже</h1>
+
+        <h2 id="score"></h2>
+
+        <div id="mistakes"></div>
+
+        <button class="restart" onclick="restartTest()">
+            Тестті қайта тапсыру
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+const questions = [
+
+    // ===== 1 =====
+    {
+        question: "\"Жасуша\" деген не?",
+        answers: ["тек жануарларда кездесетін мүшенің бір түрі", "тірі ағзалардың ең кіші бірлігі", "ағзаның сыртқы қабатын түзетін зат", "тек өсімдіктерде болатын микроскопиялық сұйықтық"],
+        correct: 1
+    },
+
+    // ===== 2 =====
+    {
+        question: "Заттар нешеге бөлінеді?",
+        answers: ["бөлінбейді", "4", "2", "3"],
+        correct: 2
+    },
+
+    // ===== 3 =====
+    {
+        question: "Көк-жасыл балдырлардың басқаша атауы",
+        answers: ["бактерия", "қарапайымдылар", "біржасушалылар", "цианобактериялар"],
+        correct: 3
+    },
+
+    // ===== 4 =====
+    {
+        question: "Көпжасушалылар?",
+        answers: ["жануарлар", "бактерия", "амеба", "жасыл эвглена"],
+        correct: 0
+    },
+
+    // ===== 5 =====
+    {
+        question: "Жасушасыз тәршәләк иесі?",
+        answers: ["бактерия", "кірпікшелі кебізше", "вирус", "саңырауқұлақтар"],
+        correct: 2
+    },
+
+    // ===== 6 =====
+    {
+        question: "Сапрофитті жолмен қоректенетін ағзалар?",
+        answers: ["жануарлар", "адамдар", "өсімдіктер", "саңырауқұлақтар"],
+        correct: 3
+    },
+
+    // ===== 7 =====
+    {
+        question: "Қоймалжың сұйықтық",
+        answers: ["вакуоль", "цитоплазма", "ядро", "мембрана"],
+        correct: 1
+    },
+
+    // ===== 8 =====
+    {
+        question: "Ұлпа жиынтығы",
+        answers: ["ми", "асқазан", "ағза", "мүше"],
+        correct: 3
+    },
+
+    // ===== 9 =====
+    {
+        question: "Көмірсу құрамындағы элементтер",
+        answers: ["Ca,He,Og", "S,H,O", "Cs,H,O", "C,H,O"],
+        correct: 3
+    },
+
+    // ===== 10 =====
+    {
+        question: "Молекулалық биологияда ең күрделі органикал зат",
+        answers: ["нәруыз", "май", "көірсу", "нуклеин қышқылы"],
+        correct: 0
+    },
+
+    // ===== 11 =====
+    {
+        question: "Балық құрамындағы органикалық зат",
+        answers: ["май", "нәруыз", "көмірсу", "нуклеин қышқылы"],
+        correct: 1
+    },
+
+    // ===== 12 =====
+    {
+        question: "Адам ағзасындағы ең күрделі мүше?",
+        answers: ["ми", "асқазан", "жүрек", "қол"],
+        correct: 0
+    },
+
+    // ===== 13 =====
+    {
+        question: "Мидың екінші бөлігін атаңыз",
+        answers: ["үлкен ми сыңарлары", "мишық", "ми діңі", "сопақша ми"],
+        correct: 2
+    },
+
+    // ===== 14 =====
+    {
+        question: "Мидың қай бөлігі жақсы дамыса логикамыз мықты болады?",
+        answers: ["оң жақ жартышар", "артқы ми", "сопақша ми", "сол жақ жартышар"],
+        correct: 3
+    },
+
+    // ===== 15 =====
+    {
+        question: "Зат алмасуды реттейтін ми бөлігі",
+        answers: ["ми көпірі", "сопақша ми", "аралық ми", "ортаңғы ми"],
+        correct: 2
+    },
+
+    // ===== 16 =====
+    {
+        question: "Тыныс алуға жауап беретін ми бөлігі",
+        answers: ["сопақша ми", "тұрақты ми", "аралық ми", "ми көпірі"],
+        correct: 0
+    },
+
+    // ===== 17 =====
+    {
+        question: "Мишық ең алғаш кімдерде пайда болды?",
+        answers: ["сиырларда", "құстарда", "аюларда", "адамдарда"],
+        correct: 1
+    },
+
+    // ===== 18 =====
+    {
+        question: "Адам ағзасының моторы",
+        answers: ["нерв талшықтары", "ми", "хз", "жүрек"],
+        correct: 3
+    },
+
+    // ===== 19 =====
+    {
+        question: "Жүрек минутына неше рет соғады?",
+        answers: ["65-75", "6767", "67-76", "75-80"],
+        correct: 0
+    },
+
+    // ===== 20 =====
+    {
+        question: "Энергетик іше бергеннің әсерінен болатын жүрек ауруы",
+        answers: ["ишемия", "инсульт", "инфаркт", "тахикардия"],
+        correct: 3
+    },
+
+    // ===== 21 =====
+    {
+        question: "Жұп тыныс алу мүшесі",
+        answers: ["бүйрек", "өкпе", "аяқ", "мұрын"],
+        correct: 1
+    },
+
+    // ===== 22 =====
+    {
+        question: "Бейорганикалық затты табыңыз",
+        answers: ["тұздар", "минералды тұздар", "майлар", "көмірсулар"],
+        correct: 1
+    },
+
+    // ===== 23 =====
+    {
+        question: "Ауа көпіршіктерінің басқаша атауы",
+        answers: ["капиллярлар", "аорта", "альвеолалар", "артериялар"],
+        correct: 2
+    },
+
+    // ===== 24 =====
+    {
+        question: "Диафрагма пішіні",
+        answers: ["ромб тәрізді", "күмбез тәрізді", "дөңгелек тәрізді", "сақина тәрізді"],
+        correct: 1
+    },
+
+    // ===== 25 =====
+    {
+        question: "Асқазан сөлі құрамы",
+        answers: ["Cl", "CaO", "H2O", "HCl"],
+        correct: 3
+    },
+
+    // ===== 26 =====
+    {
+        question: "Асқазан сөлінің құрамындағы фермент",
+        answers: ["пептид", "пепсид", "пепсин", "пигмент"],
+        correct: 2
+    },
+
+    // ===== 27 =====
+    {
+        question: "\"Прокариоттар\" деген кімдер?",
+        answers: ["ядросы жоқ ағзалар", "ядросы бар ағзалар", "митохондриясыз ағзалар", "сулы мекенде тіршілік ететін ағзалар"],
+        correct: 0
+    },
+
+    // ===== 28 =====
+    {
+        question: "\"Печень\" қай мүше?",
+        answers: ["бауыр", "бүйрек", "өкпе", "тоқішек"],
+        correct: 0
+    },
+
+    // ===== 29 =====
+    {
+        question: "Майларды ыдыратуға көмектесетін зат",
+        answers: ["бүйрек", "өт", "бауыр", "пигмент"],
+        correct: 1
+    },
+
+    // ===== 30 =====
+    {
+        question: "Нәруыздың кішкентай бөлшектері",
+        answers: ["глюкоза", "глицерин", "нуклеин қышқылдары", "аминқышқылдары"],
+        correct: 3
+    },
+
+    // ===== 31 =====
+    {
+        question: "Қандай ағза 92% судан тұрады",
+        answers: ["итбалық", "шаян", "медуза", "адам"],
+        correct: 2
+    },
+
+    // ===== 32 =====
+    {
+        question: "Беттік керілу деген не",
+        answers: ["судың ұсақ бөлшектерінің бір біріне тартылуы", "майдың ұсақ бөлшектерінің бір біріне тартылуы", "нәруыздардың ұсақ бөлшектерінің бір біріне тартылу", "глюкозалардың ұсақ бөлшектерінің бір біріне тартылу"],
+        correct: 0
+    },
+
+    // ===== 33 =====
+    {
+        question: "Өсімдік өнуіне, судың таралуына қажет элемент",
+        answers: ["P", "Ca", "Kn", "K"],
+        correct: 3
+    },
+
+    // ===== 34 =====
+    {
+        question: "Қанның құрамында болып қанды қызыл ететін элемент",
+        answers: ["F", "Fe", "Ca", "C"],
+        correct: 1
+    },
+
+    // ===== 35 =====
+    {
+        question: "Микроэлементті анықтаңыз",
+        answers: ["сутек", "оттек", "хлор", "мыс"],
+        correct: 3
+    },
+
+    // ===== 36 =====
+    {
+        question: "Құстардағы маймақ аяқ ауруы басқаша қалай аталады?",
+        answers: ["перозис", "пентозис", "гипофиз", "литофиз"],
+        correct: 0
+    },
+
+    // ===== 37 =====
+    {
+        question: "Полимерлер деген не",
+        answers: ["поломер тізбегі", "милимер тізбегі", "мономер тізбегі", "пономер тізбегі"],
+        correct: 2
+    },
+
+    // ===== 38 =====
+    {
+        question: "Дәмі тәтті органикалық зат",
+        answers: ["көмірсу", "май", "нәруыз", "липидтер"],
+        correct: 0
+    },
+
+    // ===== 39 =====
+    {
+        question: "Адам қанының құрамында қанша пайыз глюкоза бар",
+        answers: ["0,02", "0,12", "1,2", "0,012"],
+        correct: 1
+    },
+
+    // ===== 40 =====
+    {
+        question: "Крахмал көмірсудың қай типіне жатады?",
+        answers: ["дисахарид", "моносахарид", "олигосахарид", "полисахарид"],
+        correct: 3
+    },
+
+    // ===== 41 =====
+    {
+        question: "Бактерия жасушасының негізгі тірегі?",
+        answers: ["муреин", "хитин", "гликоген", "крахмал"],
+        correct: 0
+    },
+
+    // ===== 42 =====
+    {
+        question: "Майлардың 1 граммы ыдыраса қанша кДж энергия бөледі?",
+        answers: ["37,9", "38,8", "38,9", "39,9"],
+        correct: 2
+    },
+
+    // ===== 43 =====
+    {
+        question: "Өсімдіңтердің жапырағы немесе жемісінің бетінде не үшін балауыз болады?",
+        answers: ["көмірқышқыл газынан қорғайды", "түс береді", "дәм береді", "кеуіп кетуден сақтайды"],
+        correct: 3
+    },
+
+    // ===== 44 =====
+    {
+        question: "Актин деген не",
+        answers: ["бұлшықет майы", "бұлшықет нәруызы", "липид", "глюкоза"],
+        correct: 1
+    },
+
+    // ===== 45 =====
+    {
+        question: "Түсі бар нәруыз",
+        answers: ["меланин", "пигмент", "мицелла", "миозин"],
+        correct: 0
+    },
+
+    // ===== 46 =====
+    {
+        question: "Нуклеин қышқылының мономері?",
+        answers: ["нуклеоид", "нуклеин", "нуклеотид", "нуклеозид"],
+        correct: 2
+    },
+
+    // ===== 47 =====
+    {
+        question: "Нуклеотид құрамбөлігі",
+        answers: ["фосфор қышқылы", "негіздер", "сөл", "минералды тұздар"],
+        correct: 0
+    },
+
+    // ===== 48 =====
+    {
+        question: "Комплементарлы нуклеотидтер арасындағы арақашықтық?",
+        answers: ["0,31", "0,39", "0,34", "0,33"],
+        correct: 2
+    },
+
+    // ===== 49 =====
+    {
+        question: "Хромосомағы құрылыс қызметін атқаратын нәруыз",
+        answers: ["аденин", "тимин", "гуанин", "гистон"],
+        correct: 3
+    },
+
+    // ===== 50 =====
+    {
+        question: "Бес көміртекті қанттың басқаша атауы",
+        answers: ["гексоза", "пентоза", "триоза", "гектоза"],
+        correct: 1
+    }
+
+];
+
+
+let currentQuestion = 0;
+
+let userAnswers = new Array(questions.length).fill(null);
+
+
+function showQuestion() {
+
+    const q = questions[currentQuestion];
+
+    document.getElementById("progress").textContent =
+        `Сұрақ ${currentQuestion + 1} / ${questions.length}`;
+
+    document.getElementById("question").textContent =
+        q.question;
+
+    const answersBlock =
+        document.getElementById("answers");
+
+    answersBlock.innerHTML = "";
+
+
+    q.answers.forEach((answer, index) => {
+
+        const button =
+            document.createElement("button");
+
+        button.className = "answer";
+
+        button.textContent = answer;
+
+
+        if (userAnswers[currentQuestion] === index) {
+
+            button.classList.add("selected");
+
+        }
+
+
+        button.onclick = function() {
+
+            userAnswers[currentQuestion] = index;
+
+            showQuestion();
+
+        };
+
+
+        answersBlock.appendChild(button);
+
+    });
+
+
+    document.getElementById("backButton").disabled =
+        currentQuestion === 0;
+
+
+    if (currentQuestion === questions.length - 1) {
+
+        document.getElementById("nextButton").textContent =
+            "Аяқтау";
+
+    } else {
+
+        document.getElementById("nextButton").textContent =
+            "Келесі →";
+
+    }
+
+}
+
+
+function nextQuestion() {
+
+    if (userAnswers[currentQuestion] === null) {
+
+        alert("Алдымен жауапты таңда!");
+
+        return;
+
+    }
+
+
+    if (currentQuestion < questions.length - 1) {
+
+        currentQuestion++;
+
+        showQuestion();
+
+    } else {
+
+        finishTest();
+
+    }
+
+}
+
+
+function previousQuestion() {
+
+    if (currentQuestion > 0) {
+
+        currentQuestion--;
+
+        showQuestion();
+
+    }
+
+}
+
+
+function finishTest() {
+
+    const unanswered =
+        userAnswers.some(answer => answer === null);
+
+
+    if (unanswered) {
+
+        alert("Барлық сұраққа жауап бер!");
+
+        return;
+
+    }
+
+
+    let score = 0;
+
+    let mistakesHTML = "";
+
+
+    questions.forEach((q, index) => {
+
+        if (userAnswers[index] === q.correct) {
+
+            score++;
+
+        } else {
+
+            mistakesHTML += `
+
+                <div class="wrong">
+
+                    <b>
+                        ${index + 1}. ${q.question}
+                    </b>
+
+                    <p class="your-answer">
+                        Сенің жауабың:
+                        ${q.answers[userAnswers[index]]}
+                    </p>
+
+                    <p class="correct-answer">
+                        Дұрыс жауап:
+                        ${q.answers[q.correct]}
+                    </p>
+
+                </div>
+
+            `;
+
+        }
+
+    });
+
+
+    const percentage =
+        Math.round((score / questions.length) * 100);
+
+
+    document.getElementById("test").style.display =
+        "none";
+
+    document.getElementById("result").style.display =
+        "block";
+
+
+    document.getElementById("score").textContent =
+        `Нәтиже: ${score} / ${questions.length} (${percentage}%)`;
+
+
+    if (mistakesHTML === "") {
+
+        document.getElementById("mistakes").innerHTML =
+            "<h2>🌟 Барлық жауап дұрыс!</h2>";
+
+    } else {
+
+        document.getElementById("mistakes").innerHTML =
+            "<h2>Қателер:</h2>" + mistakesHTML;
+
+    }
+
+}
+
+
+function restartTest() {
+
+    currentQuestion = 0;
+
+    userAnswers =
+        new Array(questions.length).fill(null);
+
+
+    document.getElementById("result").style.display =
+        "none";
+
+    document.getElementById("test").style.display =
+        "block";
+
+
+    showQuestion();
+
+}
+
+
+showQuestion();
+
+</script>
+
+</body>
+</html>
